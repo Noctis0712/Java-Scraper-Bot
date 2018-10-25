@@ -84,3 +84,11 @@ fabric.properties
 *.class
 target/
 # End of https://www.gitignore.io/api/intellij
+.idea/workspace.xml___jb_old___
+*.class
+target/classes/JavaTestScraperBot.class
+target/classes/Main.class
+*.class
+src/main/java/JsonReader.java
+target/classes/JavaTestScraperBot.class
+src/main/java/toget.txt
