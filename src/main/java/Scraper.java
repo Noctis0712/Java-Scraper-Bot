@@ -1,16 +1,16 @@
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.github.cdimascio.dotenv.Dotenv;
 
-import java.io.BufferedReader;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
+
 import java.math.BigInteger;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -45,45 +45,56 @@ public class Scraper {
         }
     }
 
-    private static String readUrl(String urlString) throws Exception {
-        BufferedReader reader = null;
-        try {
-            URL url = new URL(urlString);
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int read;
-            char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
-
-            return buffer.toString();
-        } finally {
-            if (reader != null)
-                reader.close();
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
+    public static String JSONParsing(String charname) throws IOException {
         Dotenv dotenv = Dotenv.load();
-        String TOKEN = dotenv.get("TOKEN");
-        String Username = dotenv.get("BOT_USRNAME");
         String PUBLIC_API = dotenv.get("PUBLIC_API_KEY");
         String PRVT_API = dotenv.get(("PRIVATE_API_KEY"));
         String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-        String hash = getMd5(timeStamp+PRVT_API+PUBLIC_API);
+        String hash = Scraper.getMd5(timeStamp + PRVT_API + PUBLIC_API);
 
-        try {
-            String json = readUrl("http://gateway.marvel.com/v1/public/comics?ts="+timeStamp+"&apikey="+PUBLIC_API+"&hash="+hash);
-            System.out.println(json);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            String json2 = readUrl("https://gateway.marvel.com:443/v1/public/characters?name=iron%20man&ts="+timeStamp+"&apikey="+PUBLIC_API+"&hash="+hash);
-            System.out.println(json2);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String charname2 = charname.replaceAll("\\s+","%20");
 
+        JSONObject json = JsonReader.readJsonFromUrl("https://gateway.marvel.com:443/v1/public/characters?name=" +charname2 + "&ts=" + timeStamp + "&apikey=" + PUBLIC_API + "&hash=" + hash);
+
+        String status = json.optString("code");
+        int stat = Integer.parseInt(status);
+        System.out.println(stat);
+        try {
+            JSONArray array = json.getJSONObject("data").getJSONArray("results");
+
+            JSONObject comics = null;
+            JSONObject series = null;
+            JSONObject stories = null;
+            JSONArray urls = null;
+            String id = null;
+            String name = null;
+            try {
+                JSONArray jsonArray = array;
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                    id = jsonObject1.optString("id");
+                    name = jsonObject1.optString("name");
+                    comics = jsonObject1.optJSONObject("comics");
+                    series = jsonObject1.optJSONObject("series");
+                    stories = jsonObject1.optJSONObject(("stories"));
+                    urls = jsonObject1.optJSONArray("urls");
+                }
+            } catch (
+                    JSONException e) {
+                e.printStackTrace();
+            }
+
+            String AvailableComics = "Comics: " + comics.optString("available");
+            String AvailableSeries = "Series: " + series.optString("available");
+            String AvailableStories = "Stories: " + stories.optString("available");
+            String wiki = "Wiki Link: " + urls.getJSONObject(1).optString("url");
+            String toReturn = "ID: " + id + "\nName: " + name + "\n" +AvailableComics + "\n" + AvailableSeries + "\n" + AvailableStories + "\n" + wiki;
+
+            return toReturn;
+        }
+        catch(NullPointerException e) {
+            return "Sorry, you may have typed an incorrect name.";
+        }
     }
 }

@@ -4,6 +4,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
+
 
 public class JavaTestScraperBot extends TelegramLongPollingBot {
     @Override
@@ -50,9 +52,17 @@ public class JavaTestScraperBot extends TelegramLongPollingBot {
                     }
                 }
                 else {
+                    String charname = update.getMessage().getText();
+                    StringBuffer s = new StringBuffer();
+                    try {
+                        s.append(Scraper.JSONParsing(charname));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    String toSend = s.toString();
                     SendMessage message = new SendMessage()
                             .setChatId(update.getMessage().getChatId())
-                            .setText("Hello, I'm not programmed to understand that yet.");
+                            .setText(toSend);
 
                     try {
                         execute(message); // Call method to send the message
