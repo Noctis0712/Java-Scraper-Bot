@@ -1,10 +1,10 @@
 # Marvel-Bot
 
+**This bot pulls Marvel characters' info using the Marvel API.**
+
 **Created as the Mini-Project for the Object Oriented Programming Methodology Course.**
 
-## This bot pulls Marvel characters' info using the Marvel API. ##
-
-# How to use it? #
+ # How to use it? #
 
 **Bot not yet deployed**
 
